@@ -1,17 +1,15 @@
 const nodemailer = require('nodemailer');
 
-// 1. Configura o "SmtpClient" do Node.js
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: true, // true para porta 465, false para outras portas (ex: 587)
+  secure: true, 
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
 });
 
-// 2. Função Base para enviar e-mails
 async function sendEmail(to, subject, htmlBody) {
   try {
     const mailOptions = {
@@ -21,16 +19,13 @@ async function sendEmail(to, subject, htmlBody) {
       html: htmlBody,                                   
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[E-mail Enviado] ${subject} para ${to}. ID: ${info.messageId}`);
+    await transporter.sendMail(mailOptions);
     return true;
   } catch (error) {
-    console.error(`[Erro E-mail] Falha ao enviar e-mail para ${to}:`, error.message);
     throw new Error('Não foi possível enviar o e-mail.');
   }
 }
 
-// 3. Casos de Uso Específicos
 async function sendConfirmationEmail(userEmail, userName, token) {
   const confirmationLink = `${process.env.FRONTEND_URL}/confirm-email?token=${token}`;
 
