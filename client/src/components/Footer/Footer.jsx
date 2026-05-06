@@ -2,6 +2,12 @@ import React from 'react';
 import { Linkedin, Facebook, Youtube, Instagram } from 'lucide-react';
 import styles from './Footer.module.css';
 
+// 1. Importando os arquivos locais usando caminhos relativos
+import termosUso from '../../assets/01_Termos_de_Uso.docx?url';
+import politicaPrivacidade from '../../assets/02_Politica_de_Privacidade.docx?url';
+import memorandoAdequacao from '../../assets/03_Memorando_Adequacao_LGPD.docx?url';
+import termoConsentimento from '../../assets/04_Termo_de_Consentimento.docx?url';
+
 const Footer = () => {
   return (
     <footer className={styles.footer}>
@@ -14,6 +20,9 @@ const Footer = () => {
           <span>Apoiando o IME e a comunidade IMEana.</span>
           <span>© 2024 Alumni IME. Todos os direitos reservados.</span>
           <span>CNPJ: 19.335.957/0001-17</span>
+          
+          {/* Agrupamento opcional para organizar melhor os links no flexbox */}
+          
         </div>
 
         {/* Lado Direito: Social e Links */}
@@ -21,39 +30,53 @@ const Footer = () => {
           <div className={styles.socialIcons}>
             <a
               href="https://www.linkedin.com/company/alumniime"
+              target="_blank"
+              rel="noreferrer"
               className={styles.iconCircle}
             >
-              {/* LinkedIn e Facebook ficam bons com fill para parecerem sólidos */}
               <Linkedin size={23} fill="currentColor" strokeWidth={0} />
             </a>
             <a
               href="https://www.facebook.com/AlumniIME"
+              target="_blank"
+              rel="noreferrer"
               className={styles.iconCircle}
             >
               <Facebook size={23} fill="currentColor" strokeWidth={0} />
             </a>
             <a
               href="https://www.youtube.com/c/AlumniIME/featured"
+              target="_blank"
+              rel="noreferrer"
               className={styles.iconCircle}
             >
-              {/* YouTube: SEM fill e com strokeWidth maior para aparecer o triângulo */}
               <Youtube size={23} strokeWidth={2.5} />
             </a>
             <a
               href="https://www.instagram.com/alumniime/"
+              target="_blank"
+              rel="noreferrer"
               className={styles.iconCircle}
             >
-              {/* Instagram: Segue o padrão de traço mais grosso */}
               <Instagram size={23} strokeWidth={2.5} />
             </a>
           </div>
 
-          <a
-            href="https://alumniime.com.br/spanolitica-de-privacidade"
-            className={styles.legalLink}
-          >
-            Termos de Uso e Política de Privacidade
-          </a>
+          
+          <div className={styles.docsContainer}>
+            <a href={termosUso} download className={styles.legalLink}>
+              Termos de Uso
+            </a>
+            <a href={politicaPrivacidade} download className={styles.legalLink}>
+              Política de Privacidade
+            </a>
+            <a href={memorandoAdequacao} download className={styles.legalLink}>
+              Memorando de Adequação
+            </a>
+            <a href={termoConsentimento} download className={styles.legalLink}>
+              Termo de Consentimento
+            </a>
+          </div>
         </div>
       </div>
     </footer>
