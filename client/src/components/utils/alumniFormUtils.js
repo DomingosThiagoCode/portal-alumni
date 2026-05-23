@@ -1,3 +1,44 @@
+export const BIO_MAX_LENGTH = 5000;
+
+function normalizeLineBreaks(value = '') {
+  if (value === null || value === undefined) return '';
+  return String(value).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+}
+
+export function getBioLength(value = '') {
+  const normalized = normalizeLineBreaks(value);
+
+  // Conta \n como 2 caracteres para simular o pior caso no multipart/backend: \r\n
+  return normalized.replace(/\n/g, '\r\n').length;
+}
+
+export function normalizeBio(value = '') {
+  const normalized = normalizeLineBreaks(value);
+
+  let output = '';
+  let length = 0;
+
+  for (const char of normalized) {
+    const cost = char === '\n' ? 2 : char.length;
+
+    if (length + cost > BIO_MAX_LENGTH) break;
+
+    output += char;
+    length += cost;
+  }
+
+  return output;
+}
+
+export function validateBio(value = '') {
+  const length = getBioLength(value);
+
+  if (length > BIO_MAX_LENGTH) {
+    return `A biografia deve ter no máximo ${BIO_MAX_LENGTH} caracteres. Atualmente possui ${length}.`;
+  }
+
+  return '';
+}
 export function normalizeYear(value = '') {
   return value.replace(/\D/g, '').slice(0, 4);
 }
