@@ -10,12 +10,12 @@ import {
 } from 'lucide-react';
 import styles from './Modal.module.css';
 
-const ExpandableBio = ({ text }) => {
+const ExpandableBio = ({ text, status }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const maxLength = 250;
 
   if (!text) {
-    return <p className={styles.description}>Este ex-aluno ainda não adicionou uma biografia.</p>;
+    return <p className={styles.description}>Este {status} ainda não adicionou uma biografia.</p>;
   }
 
   if (text.length <= maxLength) {
@@ -49,6 +49,14 @@ const Modal = ({ data, onClose }) => {
   const roleText = isMeaningful(data.role) ? data.role : null;
   const companyText = isMeaningful(data.company) ? data.company : null;
 
+  function getStatusFormation(year) {
+    if (!year) return "ALUNO";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const grad = new Date(`${year}-12-31T00:00:00`); // fim do ano de formatura
+    return grad > today ? "ALUNO" : "EX-ALUNO";
+  }
+
   const headline =
     roleText && companyText
       ? `${roleText} na ${companyText}`
@@ -56,7 +64,7 @@ const Modal = ({ data, onClose }) => {
         ? companyText
         : roleText
           ? roleText
-          : 'Ex-aluno';
+          : getStatusFormation(data.graduationYear) ?? "ALUNO";
 
   // Fallback para imagem caso profilePicture seja nulo
   const avatarUrl =
@@ -103,7 +111,7 @@ const Modal = ({ data, onClose }) => {
 
             <section>
               <h3>Sobre</h3>
-              <ExpandableBio text={data.bio} />
+              <ExpandableBio text={data.bio} status={getStatusFormation(data.graduationYear)} />
             </section>
 
             <section>
