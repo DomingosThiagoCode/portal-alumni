@@ -365,15 +365,14 @@ export default function AddAlumniModal({
     }
   }
 
-  function validateLinkedinUrl(value) {
-    if (!value?.trim()) return '';
-
-    const isValid =
-      /^https?:\/\/(www\.)?linkedin\.com\/(in|company|school)\/[^\s/]+/i.test(
-        value.trim(),
-      );
-
-    return isValid ? '' : 'Insira um link válido do LinkedIn.';
+  function validateLinkedinUrl(url) {
+  // Aceita https://linkedin.com, https://www.linkedin.com e https://br.linkedin.com
+    const linkedinPattern = /^https:\/\/(www\.|[a-z]{2}\.)?linkedin\.com\/in\//i;
+    
+    if (!url || !linkedinPattern.test(url)) {
+      return 'URL de LinkedIn inválida. Por favor, insira uma URL válida do LinkedIn.';
+    }
+    return null;
   }
 
   function runCustomValidations() {
@@ -398,110 +397,140 @@ export default function AddAlumniModal({
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setShowValidation(true);
+  e.preventDefault();
+  setShowValidation(true);
 
-    runCustomValidations();
+  runCustomValidations();
 
-    const bioMsg = validateBio(form.bio);
+  const bioMsg = validateBio(form.bio);
 
-    if (bioMsg) {
-      setExtraErrors((prev) => ({
-        ...prev,
-        bio: bioMsg,
-      }));
-      return;
+  if (bioMsg) {
+    setExtraErrors((prev) => ({
+      ...prev,
+      bio: bioMsg,
+    }));
+    return;
+  }
+
+  const formEl = formRef.current;
+
+  if (formEl && !formEl.checkValidity()) {
+    formEl.reportValidity();
+    const firstInvalid = formEl.querySelector(':invalid');
+    firstInvalid?.focus();
+    return;
+  }
+
+  // Corrige a URL do LinkedIn se necessário
+  let updatedLinkedinUser = form.linkedinUser ? form.linkedinUser.trim() : '';
+  if (updatedLinkedinUser !== '') {
+    if (!(updatedLinkedinUser.startsWith('https://') || updatedLinkedinUser.startsWith('http://'))) {
+      updatedLinkedinUser = 'https://' + updatedLinkedinUser;
     }
 
-    const formEl = formRef.current;
-
-    if (formEl && !formEl.checkValidity()) {
-      formEl.reportValidity();
-      const firstInvalid = formEl.querySelector(':invalid');
-      firstInvalid?.focus();
-      return;
-    }
-
-    if (!onSubmit) {
+    const linkedinMsg = validateLinkedinUrl(updatedLinkedinUser);
+    if (linkedinMsg) {
       setExtraErrors((prev) => ({
         ...prev,
-        _form: 'Erro: ação de salvar não configurada.',
+        linkedinUser: linkedinMsg,
       }));
       return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setExtraErrors((prev) => ({ ...prev, _form: '' }));
-
-      const birthIsoDate = form.birthDate?.trim()
-        ? brToIso(form.birthDate.trim())
-        : '';
-
-      const birthIsoDateTime = birthIsoDate
-        ? `${birthIsoDate}T00:00:00.000Z`
-        : null;
-
-      const safeNumber = (val) => {
-        if (val === '' || val === null || val === undefined) return null;
-
-        const num = Number(val);
-
-        return Number.isNaN(num) ? null : num;
-      };
-
-      const formData = new FormData();
-
-      const payloadData = {
-        fullName: form.fullName?.trim(),
-        email: form.email?.trim(),
-        preferredName: form.preferredName?.trim(),
-        birthDate: birthIsoDateTime,
-        course: form.course,
-        graduationYear: safeNumber(form.graduationYear),
-        country: form.countryIso2,
-        state: hasStates ? form.stateUf : null,
-        city: form.city ? String(form.city).trim() : '',
-        addressComp: form.addressComplement?.trim() || null,
-        linkedinUrl: form.linkedinUser?.trim() || '',
-        company: form.company?.trim(),
-        yearsOfExperience: safeNumber(form.yearsOfExperience),
-        role: form.role,
-        phone: form.phone?.trim(),
-        bio: normalizeBio(form.bio).trim(),
-        skills: Array.isArray(form.skills) ? form.skills.join(',') : '',
-      };
-
-      Object.entries(payloadData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
-      });
-
-      if (form.photoFile) {
-        formData.append('profilePicture', form.photoFile);
-      }
-
-      formData.append('removePhoto', form.removePhoto ? 'true' : 'false');
-
-      await onSubmit(formData);
-      onClose?.();
-    } catch (err) {
-      console.error('Erro no submit:', err);
-
-      const backendMsg =
-        err?.response?.data?.message ||
-        err?.message ||
-        'Não foi possível salvar seu perfil.';
-
-      setExtraErrors((prev) => ({
-        ...prev,
-        _form: backendMsg,
-      }));
-    } finally {
-      setIsSubmitting(false);
     }
   }
+
+  setField('linkedinUser', updatedLinkedinUser);
+
+  // Adição da validação da URL do LinkedIn
+  const linkedinMsg = validateLinkedinUrl(updatedLinkedinUser);
+  if (linkedinMsg) {
+    setExtraErrors((prev) => ({
+      ...prev,
+      linkedinUser: linkedinMsg,
+    }));
+    return;
+  }
+
+
+  if (!onSubmit) {
+    setExtraErrors((prev) => ({
+      ...prev,
+      _form: 'Erro: ação de salvar não configurada.',
+    }));
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+    setExtraErrors((prev) => ({ ...prev, _form: '' }));
+
+    const birthIsoDate = form.birthDate?.trim()
+      ? brToIso(form.birthDate.trim())
+      : '';
+
+    const birthIsoDateTime = birthIsoDate
+      ? `${birthIsoDate}T00:00:00.000Z`
+      : null;
+
+    const safeNumber = (val) => {
+      if (val === '' || val === null || val === undefined) return null;
+
+      const num = Number(val);
+
+      return Number.isNaN(num) ? null : num;
+    };
+
+    const formData = new FormData();
+
+    const payloadData = {
+      fullName: form.fullName?.trim(),
+      email: form.email?.trim(),
+      preferredName: form.preferredName?.trim(),
+      birthDate: birthIsoDateTime,
+      course: form.course,
+      graduationYear: safeNumber(form.graduationYear),
+      country: form.countryIso2,
+      state: hasStates ? form.stateUf : null,
+      city: form.city ? String(form.city).trim() : '',
+      addressComp: form.addressComplement?.trim() || null,
+      linkedinUrl: updatedLinkedinUser,
+      company: form.company?.trim(),
+      yearsOfExperience: safeNumber(form.yearsOfExperience),
+      role: form.role,
+      phone: form.phone?.trim(),
+      bio: normalizeBio(form.bio).trim(),
+      skills: Array.isArray(form.skills) ? form.skills.join(',') : '',
+    };
+
+    Object.entries(payloadData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value);
+      }
+    });
+
+    if (form.photoFile) {
+      formData.append('profilePicture', form.photoFile);
+    }
+
+    formData.append('removePhoto', form.removePhoto ? 'true' : 'false');
+
+    await onSubmit(formData);
+    onClose?.();
+  } catch (err) {
+    console.error('Erro no submit:', err);
+
+    const backendMsg =
+      err?.response?.data?.message ||
+      err?.message ||
+      'Não foi possível salvar seu perfil.';
+
+    setExtraErrors((prev) => ({
+      ...prev,
+      _form: backendMsg,
+    }));
+  } finally {
+    setIsSubmitting(false);
+  }
+}
 
   if (!isOpen) return null;
 
