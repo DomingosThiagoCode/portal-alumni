@@ -367,7 +367,7 @@ export default function AddAlumniModal({
 
   function validateLinkedinUrl(url) {
   // Aceita https://linkedin.com, https://www.linkedin.com e https://br.linkedin.com
-    const linkedinPattern = /^https:\/\/(www\.|[a-z]{2}\.)?linkedin\.com\/in\//i;
+    const linkedinPattern = /(www\.|[a-z]{2}\.)?linkedin\.com\/in\//i;
     
     if (!url || !linkedinPattern.test(url)) {
       return 'URL de LinkedIn inválida. Por favor, insira uma URL válida do LinkedIn.';
@@ -421,9 +421,6 @@ export default function AddAlumniModal({
   // Corrige a URL do LinkedIn se necessário
   let updatedLinkedinUser = form.linkedinUser ? form.linkedinUser.trim() : '';
   if (updatedLinkedinUser !== '') {
-    if (!(updatedLinkedinUser.startsWith('https://') || updatedLinkedinUser.startsWith('http://'))) {
-      updatedLinkedinUser = 'https://' + updatedLinkedinUser;
-    }
 
     const linkedinMsg = validateLinkedinUrl(updatedLinkedinUser);
     if (linkedinMsg) {
@@ -434,8 +431,6 @@ export default function AddAlumniModal({
       return;
     }
   }
-
-  setField('linkedinUser', updatedLinkedinUser);
 
   if (!onSubmit) {
     setExtraErrors((prev) => ({
