@@ -389,9 +389,6 @@ export default function AddAlumniModal({
     const phoneMsg = validatePhone(form.phone);
     setCustomFieldError(phoneInputRef, 'phone', phoneMsg);
 
-    const linkedinMsg = validateLinkedinUrl(form.linkedinUser);
-    setExtraErrors((prev) => ({ ...prev, linkedinUser: linkedinMsg }));
-
     const bioMsg = validateBio(form.bio);
     setExtraErrors((prev) => ({ ...prev, bio: bioMsg }));
   }
@@ -439,17 +436,6 @@ export default function AddAlumniModal({
   }
 
   setField('linkedinUser', updatedLinkedinUser);
-
-  // Adição da validação da URL do LinkedIn
-  const linkedinMsg = validateLinkedinUrl(updatedLinkedinUser);
-  if (linkedinMsg) {
-    setExtraErrors((prev) => ({
-      ...prev,
-      linkedinUser: linkedinMsg,
-    }));
-    return;
-  }
-
 
   if (!onSubmit) {
     setExtraErrors((prev) => ({
